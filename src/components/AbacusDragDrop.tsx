@@ -152,22 +152,14 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
             <p className="text-base md:text-lg font-semibold text-muted-foreground mb-4">
               Drag beads from here to the rods
             </p>
-            <div className="flex justify-center gap-6">
-              <div className="flex flex-col items-center gap-2">
-                <div
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, "top")}
-                  className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary shadow-lg cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
-                />
-                <span className="text-sm font-medium">5-Bead</span>
-              </div>
+            <div className="flex justify-center">
               <div className="flex flex-col items-center gap-2">
                 <div
                   draggable
                   onDragStart={(e) => handleDragStart(e, "bottom")}
-                  className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-accent shadow-lg cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
+                  className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary shadow-lg cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
                 />
-                <span className="text-sm font-medium">1-Bead</span>
+                <span className="text-sm font-medium">Bead</span>
               </div>
             </div>
           </div>
@@ -175,11 +167,6 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
       )}
       
       <div className="relative bg-[hsl(var(--abacus-board))] rounded-3xl p-6 md:p-8 shadow-2xl w-full max-w-2xl">
-        {/* Decorative top bead */}
-        <div className="flex justify-center mb-4">
-          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary shadow-lg" />
-        </div>
-
         {/* Abacus rods */}
         <div className="grid grid-cols-5 gap-2 md:gap-4 mb-6">
           {PLACE_VALUES.map((place, index) => (
