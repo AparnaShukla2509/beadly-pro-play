@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Abacus } from "@/components/Abacus";
+import { AbacusDragDrop } from "@/components/AbacusDragDrop";
 import { GameControls, GameMode } from "@/components/GameControls";
 import { TaskDisplay } from "@/components/TaskDisplay";
 import { FeedbackDisplay } from "@/components/FeedbackDisplay";
@@ -89,7 +89,7 @@ const Index = () => {
             🧮 Abacus Game
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground">
-            Learn math with fun! Click beads to move them up and down
+            Learn math with fun! Drag and drop beads onto the rods
           </p>
         </div>
 
@@ -113,7 +113,7 @@ const Index = () => {
         {/* Abacus Display */}
         <div className="space-y-8">
           {mode === "normal" && (
-            <Abacus
+            <AbacusDragDrop
               value={userAnswer}
               onChange={setUserAnswer}
               label="Your Answer"
@@ -124,14 +124,14 @@ const Index = () => {
           {mode === "addition" && (
             <>
               <div className="grid md:grid-cols-2 gap-6">
-                <Abacus
+                <AbacusDragDrop
                   value={input1}
                   onChange={setInput1}
                   readonly={true}
                   label={`First Number: ${num1.toFixed(2)}`}
                   showValue={false}
                 />
-                <Abacus
+                <AbacusDragDrop
                   value={input2}
                   onChange={setInput2}
                   readonly={true}
@@ -142,7 +142,7 @@ const Index = () => {
               <div className="flex justify-center">
                 <div className="text-5xl font-bold text-primary mb-4">+</div>
               </div>
-              <Abacus
+              <AbacusDragDrop
                 value={userAnswer}
                 onChange={setUserAnswer}
                 label="Your Answer"
@@ -154,14 +154,14 @@ const Index = () => {
           {mode === "subtraction" && (
             <>
               <div className="grid md:grid-cols-2 gap-6">
-                <Abacus
+                <AbacusDragDrop
                   value={input1}
                   onChange={setInput1}
                   readonly={true}
                   label={`First Number: ${Math.max(num1, num2).toFixed(2)}`}
                   showValue={false}
                 />
-                <Abacus
+                <AbacusDragDrop
                   value={input2}
                   onChange={setInput2}
                   readonly={true}
@@ -172,7 +172,7 @@ const Index = () => {
               <div className="flex justify-center">
                 <div className="text-5xl font-bold text-primary mb-4">−</div>
               </div>
-              <Abacus
+              <AbacusDragDrop
                 value={userAnswer}
                 onChange={setUserAnswer}
                 label="Your Answer"
