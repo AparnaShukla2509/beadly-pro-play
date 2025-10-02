@@ -211,9 +211,6 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
                   )}
                 </div>
 
-                {/* Divider line */}
-                <div className="w-full h-1 bg-[hsl(var(--abacus-rod))] rounded-full my-2 z-20" />
-
                 {/* Bottom section (1-value beads) - Drop zone */}
                 <div
                   onDragOver={(e) => handleDragOver(e, index, "bottom")}
