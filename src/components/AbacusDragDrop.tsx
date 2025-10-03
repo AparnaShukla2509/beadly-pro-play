@@ -16,11 +16,11 @@ interface AbacusDragDropProps {
 }
 
 const PLACE_VALUES = [
-  { name: "Hundreds", value: 100, label: "(100)", bengali: "শতক" },
-  { name: "Tens", value: 10, label: "(10)", bengali: "দশক" },
-  { name: "Ones", value: 1, label: "(1)", bengali: "একক" },
-  { name: "Tenths", value: 0.1, label: "(0.1)", bengali: "দশমাংশ" },
-  { name: "Hundredths", value: 0.01, label: "(0.01)", bengali: "শতাংশ" },
+  { name: "Hundreds", value: 100, label: "(100)", bengali: "শতক (100)" },
+  { name: "Tens", value: 10, label: "(10)", bengali: "দশক (10)" },
+  { name: "Ones", value: 1, label: "(1)", bengali: "একক (1)" },
+  { name: "Tenths", value: 0.1, label: "(0.1)", bengali: "দশমাংশ (0.1)" },
+  { name: "Hundredths", value: 0.01, label: "(0.01)", bengali: "শতাংশ (0.01)" },
 ];
 
 const BEAD_COLORS = [
@@ -85,7 +85,7 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
   };
 
   const handleDrop = (e: DragEvent, targetRodIndex: number) => {
-    if (readonly || !draggedBead) return;
+    if (readonly) return;
     e.preventDefault();
     
     const newPositions = [...beadPositions];
@@ -94,7 +94,6 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
       newPositions[targetRodIndex] = { count: newPositions[targetRodIndex].count + 1 };
       setBeadPositions(newPositions);
       onChange?.(beadPositionsToValue(newPositions));
-      toast({ title: "Bead added!" });
     }
     
     setDraggedBead(null);
@@ -111,84 +110,71 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
     ];
     setBeadPositions(resetPositions);
     onChange?.(0);
-    toast({ title: "Reset complete!" });
   };
 
   const calculatedValue = beadPositionsToValue(beadPositions);
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
+    <div className="flex flex-col items-center gap-6 w-full">
       {label && (
         <div className="text-lg font-bold text-foreground bg-card px-6 py-2 rounded-full shadow-md">
           {label}
         </div>
       )}
 
-      {/* Drag source area with Reset button */}
+      {/* Drag source area */}
       {!readonly && (
-        <div className="bg-card rounded-3xl shadow-xl p-6 w-full max-w-2xl">
+        <div className="bg-card rounded-2xl shadow-lg p-8 w-full max-w-2xl">
           <div className="text-center space-y-4">
-            <p className="text-base md:text-lg font-semibold text-muted-foreground">
-              🎯 Interactive Abacus - Drag & Drop Feature
+            <p className="text-base text-muted-foreground">
+              এখান থেকে টেনে আনো
             </p>
-            <p className="text-sm text-muted-foreground">
-              Click beads to add/remove • Drag beads between rods • Use reset to clear
-            </p>
-            <Button 
-              onClick={handleReset}
-              variant="outline"
-              className="w-full md:w-auto"
-            >
-              Reset All Beads
-            </Button>
+            <div className="flex justify-center">
+              <div
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.effectAllowed = "copy";
+                  e.dataTransfer.setData("text/plain", "bead");
+                }}
+                className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-xl cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
+              />
+            </div>
           </div>
         </div>
       )}
       
-      <div className="relative bg-[hsl(var(--abacus-board))] rounded-3xl p-6 md:p-8 shadow-2xl w-full max-w-2xl">
+      <div className="relative bg-gradient-to-br from-yellow-400 to-orange-400 rounded-3xl p-8 md:p-12 shadow-2xl w-full max-w-2xl">
         {/* Abacus rods */}
-        <div className="grid grid-cols-5 gap-2 md:gap-4 mb-6">
+        <div className="grid grid-cols-5 gap-4 md:gap-8 mb-6">
           {PLACE_VALUES.map((place, index) => (
             <div key={index} className="flex flex-col items-center">
               {/* Rod container with drop zone */}
               <div 
-                className="relative flex flex-col items-center w-full"
+                className="relative flex flex-col items-center w-full min-h-[300px] md:min-h-[350px]"
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, index)}
               >
                 {/* Vertical rod */}
-                <div className="absolute w-1 md:w-2 h-80 md:h-96 bg-[hsl(var(--abacus-rod))] rounded-full top-0" />
+                <div className="absolute w-2 md:w-3 h-full bg-gray-600 rounded-full top-0" />
                 
-                {/* All beads (5 beads total, each with same value) */}
-                <div className="relative z-10 flex flex-col items-center justify-start gap-2 pt-4 w-full h-80 md:h-96">
-                  {[0, 1, 2, 3, 4].map((beadIndex) => (
+                {/* Beads on rod - shown as small dots */}
+                <div className="relative z-10 flex flex-col items-center justify-center gap-3 pt-4 w-full h-full">
+                  {Array.from({ length: beadPositions[index].count }).map((_, beadIndex) => (
                     <div
                       key={beadIndex}
-                      draggable={!readonly && beadIndex < beadPositions[index].count}
-                      onDragStart={(e) => handleDragStart(e, index, beadIndex)}
                       onClick={() => {
                         if (!readonly) {
                           const newPositions = [...beadPositions];
-                          const currentCount = newPositions[index].count;
-                          
-                          // Toggle bead: if clicking an active bead or below, set to that position
-                          if (beadIndex < currentCount) {
-                            newPositions[index] = { count: beadIndex };
-                          } else {
-                            newPositions[index] = { count: beadIndex + 1 };
-                          }
-                          
+                          newPositions[index] = { count: Math.max(0, newPositions[index].count - 1) };
                           setBeadPositions(newPositions);
                           onChange?.(beadPositionsToValue(newPositions));
                         }
                       }}
                       className={cn(
-                        "w-12 h-12 md:w-16 md:h-16 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 active:scale-95",
-                        BEAD_COLORS[index],
-                        beadIndex < beadPositions[index].count ? "opacity-100 cursor-grab active:cursor-grabbing" : "opacity-30",
-                        !readonly && "cursor-pointer hover:brightness-110"
+                        "w-6 h-6 md:w-8 md:h-8 rounded-full bg-gray-800 shadow-lg transition-all duration-300 transform hover:scale-125",
+                        !readonly && "cursor-pointer hover:bg-gray-900"
                       )}
-                      title={beadIndex < beadPositions[index].count ? `Drag to move or click to remove` : `Click to add`}
+                      title="Click to remove"
                     />
                   ))}
                 </div>
@@ -196,26 +182,35 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
 
               {/* Place value label */}
               <div className="mt-4 text-center">
-                <div className="text-xs md:text-sm font-bold text-foreground/90">
-                  {place.name}
+                <div className="text-sm md:text-base font-bold text-gray-800">
+                  {place.bengali}
                 </div>
-                <div className="text-xs text-foreground/70">{place.label}</div>
               </div>
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Value display */}
-        {showValue && (
-          <div className="text-center mt-6">
-            <div className="inline-block bg-card px-8 py-3 rounded-2xl shadow-lg">
-              <div className="text-3xl md:text-4xl font-bold text-foreground tabular-nums">
-                {calculatedValue.toFixed(2)}
-              </div>
+      {/* Value display */}
+      {showValue && (
+        <div className="text-center">
+          <div className="inline-block bg-card px-12 py-4 rounded-2xl shadow-lg">
+            <div className="text-4xl md:text-5xl font-bold text-foreground tabular-nums">
+              {calculatedValue.toFixed(2)}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Reset button */}
+      {!readonly && (
+        <Button 
+          onClick={handleReset}
+          className="bg-red-600 hover:bg-red-700 text-white text-lg px-12 py-6 rounded-xl shadow-lg"
+        >
+          আবার করো
+        </Button>
+      )}
     </div>
   );
 };
