@@ -1,9 +1,8 @@
-import { useState, useEffect, DragEvent } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface BeadPosition {
-  top: boolean;
-  bottom: number;
+  count: number; // Number of beads activated (0-5)
 }
 
 interface AbacusDragDropProps {
@@ -32,14 +31,12 @@ const BEAD_COLORS = [
 
 export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, showValue = true }: AbacusDragDropProps) => {
   const [beadPositions, setBeadPositions] = useState<BeadPosition[]>([
-    { top: false, bottom: 0 },
-    { top: false, bottom: 0 },
-    { top: false, bottom: 0 },
-    { top: false, bottom: 0 },
-    { top: false, bottom: 0 },
+    { count: 0 },
+    { count: 0 },
+    { count: 0 },
+    { count: 0 },
+    { count: 0 },
   ]);
-  const [draggedBeadType, setDraggedBeadType] = useState<"top" | "bottom" | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<{ rod: number; type: "top" | "bottom" } | null>(null);
 
   useEffect(() => {
     const positions = valueToBeadPositions(value);
@@ -52,13 +49,9 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
 
     PLACE_VALUES.forEach((place) => {
       const count = Math.floor(remaining / place.value);
-      const effectiveCount = Math.min(count, 9);
+      const effectiveCount = Math.min(count, 5); // Max 5 beads per rod
       
-      if (effectiveCount >= 5) {
-        positions.push({ top: true, bottom: effectiveCount - 5 });
-      } else {
-        positions.push({ top: false, bottom: effectiveCount });
-      }
+      positions.push({ count: effectiveCount });
       
       remaining -= effectiveCount * place.value;
       remaining = Math.round(remaining * 100) / 100;
@@ -70,69 +63,9 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
   const beadPositionsToValue = (positions: BeadPosition[]): number => {
     let total = 0;
     positions.forEach((pos, index) => {
-      const topValue = pos.top ? 5 : 0;
-      const bottomValue = pos.bottom;
-      total += (topValue + bottomValue) * PLACE_VALUES[index].value;
+      total += pos.count * PLACE_VALUES[index].value;
     });
     return Math.round(total * 100) / 100;
-  };
-
-  const handleDragStart = (e: DragEvent, type: "top" | "bottom") => {
-    if (readonly) return;
-    setDraggedBeadType(type);
-    e.dataTransfer.effectAllowed = "copy";
-    e.dataTransfer.setData("text/plain", type);
-  };
-
-  const handleDragOver = (e: DragEvent, rodIndex: number, type: "top" | "bottom") => {
-    if (readonly) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-    setDragOverIndex({ rod: rodIndex, type });
-  };
-
-  const handleDragLeave = () => {
-    setDragOverIndex(null);
-  };
-
-  const handleDrop = (e: DragEvent, rodIndex: number, type: "top" | "bottom") => {
-    if (readonly) return;
-    e.preventDefault();
-    
-    const newPositions = [...beadPositions];
-    
-    if (type === "top") {
-      // Toggle top bead
-      newPositions[rodIndex] = { ...newPositions[rodIndex], top: !newPositions[rodIndex].top };
-    } else {
-      // Add bottom bead
-      const currentBottom = newPositions[rodIndex].bottom;
-      newPositions[rodIndex] = { ...newPositions[rodIndex], bottom: Math.min(currentBottom + 1, 4) };
-    }
-    
-    setBeadPositions(newPositions);
-    const newValue = beadPositionsToValue(newPositions);
-    onChange?.(newValue);
-    
-    setDraggedBeadType(null);
-    setDragOverIndex(null);
-  };
-
-  const handleRemoveBead = (rodIndex: number, type: "top" | "bottom") => {
-    if (readonly) return;
-    
-    const newPositions = [...beadPositions];
-    
-    if (type === "top") {
-      newPositions[rodIndex] = { ...newPositions[rodIndex], top: false };
-    } else {
-      const currentBottom = newPositions[rodIndex].bottom;
-      newPositions[rodIndex] = { ...newPositions[rodIndex], bottom: Math.max(currentBottom - 1, 0) };
-    }
-    
-    setBeadPositions(newPositions);
-    const newValue = beadPositionsToValue(newPositions);
-    onChange?.(newValue);
   };
 
   const calculatedValue = beadPositionsToValue(beadPositions);
@@ -164,68 +97,33 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
               {/* Rod container */}
               <div className="relative flex flex-col items-center w-full">
                 {/* Vertical rod */}
-                <div className="absolute w-1 md:w-2 h-72 md:h-80 bg-[hsl(var(--abacus-rod))] rounded-full top-0" />
+                <div className="absolute w-1 md:w-2 h-80 md:h-96 bg-[hsl(var(--abacus-rod))] rounded-full top-0" />
                 
-                {/* Top section (5-value bead) */}
-                <div className="relative z-10 h-20 md:h-24 flex items-start justify-center pt-2 w-full">
-                  <div
-                    draggable={!readonly}
-                    onDragStart={(e) => {
-                      if (!readonly) {
-                        handleDragStart(e, "top");
-                        e.dataTransfer.setData("rodIndex", index.toString());
-                      }
-                    }}
-                    onClick={() => {
-                      if (!readonly) {
-                        const newPositions = [...beadPositions];
-                        newPositions[index] = { ...newPositions[index], top: !newPositions[index].top };
-                        setBeadPositions(newPositions);
-                        onChange?.(beadPositionsToValue(newPositions));
-                      }
-                    }}
-                    className={cn(
-                      "w-10 h-10 md:w-14 md:h-14 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 active:scale-95",
-                      BEAD_COLORS[index],
-                      beadPositions[index].top ? "translate-y-12 md:translate-y-16" : "translate-y-0",
-                      !readonly && "cursor-pointer hover:brightness-110"
-                    )}
-                  />
-                </div>
-
-                {/* Middle gap */}
-                <div className="h-8 md:h-10" />
-
-                {/* Bottom section (4 one-value beads) */}
-                <div className="relative z-10 h-44 md:h-48 flex flex-col items-center justify-start gap-1 pt-2 w-full">
-                  {[0, 1, 2, 3].map((beadIndex) => (
+                {/* All beads (5 beads total, each with same value) */}
+                <div className="relative z-10 flex flex-col items-center justify-start gap-2 pt-4 w-full h-80 md:h-96">
+                  {[0, 1, 2, 3, 4].map((beadIndex) => (
                     <div
                       key={beadIndex}
-                      draggable={!readonly}
-                      onDragStart={(e) => {
-                        if (!readonly) {
-                          handleDragStart(e, "bottom");
-                          e.dataTransfer.setData("rodIndex", index.toString());
-                          e.dataTransfer.setData("beadIndex", beadIndex.toString());
-                        }
-                      }}
                       onClick={() => {
                         if (!readonly) {
                           const newPositions = [...beadPositions];
-                          const currentBottom = newPositions[index].bottom;
-                          if (beadIndex < currentBottom) {
-                            newPositions[index] = { ...newPositions[index], bottom: beadIndex };
+                          const currentCount = newPositions[index].count;
+                          
+                          // Toggle bead: if clicking an active bead or below, set to that position
+                          if (beadIndex < currentCount) {
+                            newPositions[index] = { count: beadIndex };
                           } else {
-                            newPositions[index] = { ...newPositions[index], bottom: beadIndex + 1 };
+                            newPositions[index] = { count: beadIndex + 1 };
                           }
+                          
                           setBeadPositions(newPositions);
                           onChange?.(beadPositionsToValue(newPositions));
                         }
                       }}
                       className={cn(
-                        "w-10 h-10 md:w-14 md:h-14 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 active:scale-95",
+                        "w-12 h-12 md:w-16 md:h-16 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 active:scale-95",
                         BEAD_COLORS[index],
-                        beadIndex < beadPositions[index].bottom ? "translate-y-0" : "translate-y-8 md:translate-y-10 opacity-50",
+                        beadIndex < beadPositions[index].count ? "opacity-100" : "opacity-30",
                         !readonly && "cursor-pointer hover:brightness-110"
                       )}
                     />
