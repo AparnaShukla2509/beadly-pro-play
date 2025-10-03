@@ -126,17 +126,23 @@ const Index = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <AbacusDragDrop
                   value={input1}
-                  onChange={setInput1}
-                  readonly={true}
+                  onChange={(val) => {
+                    setInput1(val);
+                    setUserAnswer(Math.round((val + input2) * 100) / 100);
+                  }}
+                  readonly={false}
                   label={`First Number: ${num1.toFixed(2)}`}
-                  showValue={false}
+                  showValue={true}
                 />
                 <AbacusDragDrop
                   value={input2}
-                  onChange={setInput2}
-                  readonly={true}
+                  onChange={(val) => {
+                    setInput2(val);
+                    setUserAnswer(Math.round((input1 + val) * 100) / 100);
+                  }}
+                  readonly={false}
                   label={`Second Number: ${num2.toFixed(2)}`}
-                  showValue={false}
+                  showValue={true}
                 />
               </div>
               <div className="flex justify-center">
@@ -147,6 +153,7 @@ const Index = () => {
                 onChange={setUserAnswer}
                 label="Your Answer"
                 showValue={true}
+                readonly={true}
               />
             </>
           )}
@@ -156,17 +163,23 @@ const Index = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <AbacusDragDrop
                   value={input1}
-                  onChange={setInput1}
-                  readonly={true}
+                  onChange={(val) => {
+                    setInput1(val);
+                    setUserAnswer(Math.round((val - input2) * 100) / 100);
+                  }}
+                  readonly={false}
                   label={`First Number: ${Math.max(num1, num2).toFixed(2)}`}
-                  showValue={false}
+                  showValue={true}
                 />
                 <AbacusDragDrop
                   value={input2}
-                  onChange={setInput2}
-                  readonly={true}
+                  onChange={(val) => {
+                    setInput2(val);
+                    setUserAnswer(Math.round((input1 - val) * 100) / 100);
+                  }}
+                  readonly={false}
                   label={`Second Number: ${Math.min(num1, num2).toFixed(2)}`}
-                  showValue={false}
+                  showValue={true}
                 />
               </div>
               <div className="flex justify-center">
@@ -177,6 +190,7 @@ const Index = () => {
                 onChange={setUserAnswer}
                 label="Your Answer"
                 showValue={true}
+                readonly={true}
               />
             </>
           )}
