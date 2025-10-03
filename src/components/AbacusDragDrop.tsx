@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, DragEvent } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface BeadPosition {
   count: number; // Number of beads activated (0-5)
@@ -30,6 +32,7 @@ const BEAD_COLORS = [
 ];
 
 export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, showValue = true }: AbacusDragDropProps) => {
+  const { toast } = useToast();
   const [beadPositions, setBeadPositions] = useState<BeadPosition[]>([
     { count: 0 },
     { count: 0 },
@@ -37,6 +40,7 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
     { count: 0 },
     { count: 0 },
   ]);
+  const [draggedBead, setDraggedBead] = useState<{ rodIndex: number; beadIndex: number } | null>(null);
 
   useEffect(() => {
     const positions = valueToBeadPositions(value);
@@ -68,6 +72,48 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
     return Math.round(total * 100) / 100;
   };
 
+  const handleDragStart = (e: DragEvent, rodIndex: number, beadIndex: number) => {
+    if (readonly) return;
+    setDraggedBead({ rodIndex, beadIndex });
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: DragEvent) => {
+    if (readonly) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: DragEvent, targetRodIndex: number) => {
+    if (readonly || !draggedBead) return;
+    e.preventDefault();
+    
+    const newPositions = [...beadPositions];
+    // Increment the target rod's count
+    if (newPositions[targetRodIndex].count < 5) {
+      newPositions[targetRodIndex] = { count: newPositions[targetRodIndex].count + 1 };
+      setBeadPositions(newPositions);
+      onChange?.(beadPositionsToValue(newPositions));
+      toast({ title: "Bead added!" });
+    }
+    
+    setDraggedBead(null);
+  };
+
+  const handleReset = () => {
+    if (readonly) return;
+    const resetPositions = [
+      { count: 0 },
+      { count: 0 },
+      { count: 0 },
+      { count: 0 },
+      { count: 0 },
+    ];
+    setBeadPositions(resetPositions);
+    onChange?.(0);
+    toast({ title: "Reset complete!" });
+  };
+
   const calculatedValue = beadPositionsToValue(beadPositions);
 
   return (
@@ -78,13 +124,23 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
         </div>
       )}
 
-      {/* Drag source area */}
+      {/* Drag source area with Reset button */}
       {!readonly && (
         <div className="bg-card rounded-3xl shadow-xl p-6 w-full max-w-2xl">
-          <div className="text-center mb-4">
-            <p className="text-base md:text-lg font-semibold text-muted-foreground mb-4">
-              Drag beads to activate them
+          <div className="text-center space-y-4">
+            <p className="text-base md:text-lg font-semibold text-muted-foreground">
+              🎯 Interactive Abacus - Drag & Drop Feature
             </p>
+            <p className="text-sm text-muted-foreground">
+              Click beads to add/remove • Drag beads between rods • Use reset to clear
+            </p>
+            <Button 
+              onClick={handleReset}
+              variant="outline"
+              className="w-full md:w-auto"
+            >
+              Reset All Beads
+            </Button>
           </div>
         </div>
       )}
@@ -94,8 +150,12 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
         <div className="grid grid-cols-5 gap-2 md:gap-4 mb-6">
           {PLACE_VALUES.map((place, index) => (
             <div key={index} className="flex flex-col items-center">
-              {/* Rod container */}
-              <div className="relative flex flex-col items-center w-full">
+              {/* Rod container with drop zone */}
+              <div 
+                className="relative flex flex-col items-center w-full"
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+              >
                 {/* Vertical rod */}
                 <div className="absolute w-1 md:w-2 h-80 md:h-96 bg-[hsl(var(--abacus-rod))] rounded-full top-0" />
                 
@@ -104,6 +164,8 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
                   {[0, 1, 2, 3, 4].map((beadIndex) => (
                     <div
                       key={beadIndex}
+                      draggable={!readonly && beadIndex < beadPositions[index].count}
+                      onDragStart={(e) => handleDragStart(e, index, beadIndex)}
                       onClick={() => {
                         if (!readonly) {
                           const newPositions = [...beadPositions];
@@ -123,9 +185,10 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
                       className={cn(
                         "w-12 h-12 md:w-16 md:h-16 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 active:scale-95",
                         BEAD_COLORS[index],
-                        beadIndex < beadPositions[index].count ? "opacity-100" : "opacity-30",
+                        beadIndex < beadPositions[index].count ? "opacity-100 cursor-grab active:cursor-grabbing" : "opacity-30",
                         !readonly && "cursor-pointer hover:brightness-110"
                       )}
+                      title={beadIndex < beadPositions[index].count ? `Drag to move or click to remove` : `Click to add`}
                     />
                   ))}
                 </div>
