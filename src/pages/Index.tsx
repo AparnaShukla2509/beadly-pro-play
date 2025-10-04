@@ -123,7 +123,7 @@ const Index = () => {
 
           {mode === "addition" && (
             <>
-              <div className="grid md:grid-cols-2 gap-6 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 <AbacusDragDrop
                   value={input1}
                   onChange={setInput1}
@@ -140,7 +140,7 @@ const Index = () => {
                 />
               </div>
               <div className="flex justify-center">
-                <div className="text-5xl font-bold text-primary my-4">=</div>
+                <div className="text-3xl md:text-5xl font-bold text-primary my-2 md:my-4">=</div>
               </div>
               <AbacusDragDrop
                 value={userAnswer}
@@ -154,7 +154,7 @@ const Index = () => {
 
           {mode === "subtraction" && (
             <>
-              <div className="grid md:grid-cols-2 gap-6 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 <AbacusDragDrop
                   value={input1}
                   onChange={setInput1}
@@ -171,7 +171,7 @@ const Index = () => {
                 />
               </div>
               <div className="flex justify-center">
-                <div className="text-5xl font-bold text-primary my-4">=</div>
+                <div className="text-3xl md:text-5xl font-bold text-primary my-2 md:my-4">=</div>
               </div>
               <AbacusDragDrop
                 value={userAnswer}
