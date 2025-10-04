@@ -123,23 +123,22 @@ const Index = () => {
 
           {mode === "addition" && (
             <>
-              <AbacusDragDrop
-                value={input1}
-                onChange={setInput1}
-                readonly={false}
-                label={`First Number: ${num1.toFixed(2)}`}
-                showValue={true}
-              />
-              <div className="flex justify-center">
-                <div className="text-5xl font-bold text-primary my-4">+</div>
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                <AbacusDragDrop
+                  value={input1}
+                  onChange={setInput1}
+                  readonly={false}
+                  label={`First Number: ${num1.toFixed(2)}`}
+                  showValue={true}
+                />
+                <AbacusDragDrop
+                  value={input2}
+                  onChange={setInput2}
+                  readonly={false}
+                  label={`Second Number: ${num2.toFixed(2)}`}
+                  showValue={true}
+                />
               </div>
-              <AbacusDragDrop
-                value={input2}
-                onChange={setInput2}
-                readonly={false}
-                label={`Second Number: ${num2.toFixed(2)}`}
-                showValue={true}
-              />
               <div className="flex justify-center">
                 <div className="text-5xl font-bold text-primary my-4">=</div>
               </div>
@@ -155,23 +154,22 @@ const Index = () => {
 
           {mode === "subtraction" && (
             <>
-              <AbacusDragDrop
-                value={input1}
-                onChange={setInput1}
-                readonly={false}
-                label={`First Number: ${Math.max(num1, num2).toFixed(2)}`}
-                showValue={true}
-              />
-              <div className="flex justify-center">
-                <div className="text-5xl font-bold text-primary my-4">−</div>
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                <AbacusDragDrop
+                  value={input1}
+                  onChange={setInput1}
+                  readonly={false}
+                  label={`First Number: ${Math.max(num1, num2).toFixed(2)}`}
+                  showValue={true}
+                />
+                <AbacusDragDrop
+                  value={input2}
+                  onChange={setInput2}
+                  readonly={false}
+                  label={`Second Number: ${Math.min(num1, num2).toFixed(2)}`}
+                  showValue={true}
+                />
               </div>
-              <AbacusDragDrop
-                value={input2}
-                onChange={setInput2}
-                readonly={false}
-                label={`Second Number: ${Math.min(num1, num2).toFixed(2)}`}
-                showValue={true}
-              />
               <div className="flex justify-center">
                 <div className="text-5xl font-bold text-primary my-4">=</div>
               </div>
