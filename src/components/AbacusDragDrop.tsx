@@ -53,7 +53,7 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
 
     PLACE_VALUES.forEach((place) => {
       const count = Math.floor(remaining / place.value);
-      const effectiveCount = Math.min(count, 5); // Max 5 beads per rod
+      const effectiveCount = Math.min(count, 9); // Max 9 beads per rod
       
       positions.push({ count: effectiveCount });
       
@@ -91,7 +91,7 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
     const dragData = e.dataTransfer.getData("text/plain");
     if (dragData === "new-bead") {
       const newPositions = [...beadPositions];
-      if (newPositions[targetRodIndex].count < 5) {
+      if (newPositions[targetRodIndex].count < 9) {
         newPositions[targetRodIndex] = { count: newPositions[targetRodIndex].count + 1 };
         setBeadPositions(newPositions);
         onChange?.(beadPositionsToValue(newPositions));
