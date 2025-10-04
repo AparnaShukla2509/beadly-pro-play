@@ -72,31 +72,31 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
     return Math.round(total * 100) / 100;
   };
 
-  const handleDragStart = (e: DragEvent, rodIndex: number, beadIndex: number) => {
+  const handleDragStart = (e: DragEvent) => {
     if (readonly) return;
-    setDraggedBead({ rodIndex, beadIndex });
-    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.effectAllowed = "copy";
+    e.dataTransfer.setData("text/plain", "new-bead");
   };
 
   const handleDragOver = (e: DragEvent) => {
     if (readonly) return;
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
+    e.dataTransfer.dropEffect = "copy";
   };
 
   const handleDrop = (e: DragEvent, targetRodIndex: number) => {
     if (readonly) return;
     e.preventDefault();
     
-    const newPositions = [...beadPositions];
-    // Increment the target rod's count
-    if (newPositions[targetRodIndex].count < 5) {
-      newPositions[targetRodIndex] = { count: newPositions[targetRodIndex].count + 1 };
-      setBeadPositions(newPositions);
-      onChange?.(beadPositionsToValue(newPositions));
+    const dragData = e.dataTransfer.getData("text/plain");
+    if (dragData === "new-bead") {
+      const newPositions = [...beadPositions];
+      if (newPositions[targetRodIndex].count < 5) {
+        newPositions[targetRodIndex] = { count: newPositions[targetRodIndex].count + 1 };
+        setBeadPositions(newPositions);
+        onChange?.(beadPositionsToValue(newPositions));
+      }
     }
-    
-    setDraggedBead(null);
   };
 
   const handleReset = () => {
@@ -131,11 +131,8 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
             </p>
             <div className="flex justify-center">
               <div
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.effectAllowed = "copy";
-                  e.dataTransfer.setData("text/plain", "bead");
-                }}
+                draggable={true}
+                onDragStart={handleDragStart}
                 className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-xl cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
               />
             </div>
