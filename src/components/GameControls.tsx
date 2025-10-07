@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type GameMode = "normal" | "addition" | "subtraction";
@@ -88,7 +88,7 @@ export const GameControls = ({
           variant="outline"
           className="text-base md:text-lg font-bold rounded-2xl"
         >
-          <RefreshCw className="h-5 w-5" />
+          Reset
         </Button>
       </div>
     </div>
