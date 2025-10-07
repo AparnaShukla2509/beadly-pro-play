@@ -72,10 +72,10 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
     return Math.round(total * 100) / 100;
   };
 
-  const handleDragStart = (e: DragEvent) => {
+  const handleDragStart = (e: DragEvent, rodIndex: number) => {
     if (readonly) return;
     e.dataTransfer.effectAllowed = "copy";
-    e.dataTransfer.setData("text/plain", "new-bead");
+    e.dataTransfer.setData("text/plain", `new-bead-${rodIndex}`);
   };
 
   const handleDragOver = (e: DragEvent) => {
@@ -89,12 +89,15 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
     e.preventDefault();
     
     const dragData = e.dataTransfer.getData("text/plain");
-    if (dragData === "new-bead") {
-      const newPositions = [...beadPositions];
-      if (newPositions[targetRodIndex].count < 9) {
-        newPositions[targetRodIndex] = { count: newPositions[targetRodIndex].count + 1 };
-        setBeadPositions(newPositions);
-        onChange?.(beadPositionsToValue(newPositions));
+    if (dragData.startsWith("new-bead-")) {
+      const sourceRodIndex = parseInt(dragData.split("-")[2]);
+      if (sourceRodIndex === targetRodIndex) {
+        const newPositions = [...beadPositions];
+        if (newPositions[targetRodIndex].count < 9) {
+          newPositions[targetRodIndex] = { count: newPositions[targetRodIndex].count + 1 };
+          setBeadPositions(newPositions);
+          onChange?.(beadPositionsToValue(newPositions));
+        }
       }
     }
   };
@@ -112,6 +115,19 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
     onChange?.(0);
   };
 
+  const handleRemoveLastBead = () => {
+    if (readonly) return;
+    const newPositions = [...beadPositions];
+    for (let i = newPositions.length - 1; i >= 0; i--) {
+      if (newPositions[i].count > 0) {
+        newPositions[i] = { count: newPositions[i].count - 1 };
+        setBeadPositions(newPositions);
+        onChange?.(beadPositionsToValue(newPositions));
+        break;
+      }
+    }
+  };
+
   const calculatedValue = beadPositionsToValue(beadPositions);
 
   return (
@@ -125,16 +141,26 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
       {/* Drag source area */}
       {!readonly && (
         <div className="bg-card rounded-2xl shadow-lg p-4 md:p-8 w-full max-w-2xl">
-          <div className="text-center space-y-2 md:space-y-4">
-            <p className="text-sm md:text-base text-muted-foreground">
+          <div className="text-center space-y-3 md:space-y-4">
+            <p className="text-sm md:text-base text-muted-foreground font-semibold">
               এখান থেকে টেনে আনো
             </p>
-            <div className="flex justify-center">
-              <div
-                draggable={true}
-                onDragStart={handleDragStart}
-                className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-xl cursor-grab active:cursor-grabbing hover:scale-110 transition-transform touch-none"
-              />
+            <div className="grid grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+              {PLACE_VALUES.map((place, index) => (
+                <div key={index} className="flex flex-col items-center gap-2">
+                  <div
+                    draggable={true}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    className={cn(
+                      "w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full shadow-xl cursor-grab active:cursor-grabbing hover:scale-110 transition-transform touch-none",
+                      BEAD_COLORS[index]
+                    )}
+                  />
+                  <p className="text-xs sm:text-sm font-medium text-foreground text-center leading-tight">
+                    {place.bengali.split(' ')[0]}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -154,7 +180,7 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
                 {/* Vertical rod */}
                 <div className="absolute w-1.5 sm:w-2 md:w-3 h-full bg-gray-600 rounded-full top-0" />
                 
-                {/* Beads on rod - shown as small dots */}
+                {/* Beads on rod - shown as colored beads */}
                 <div className="relative z-10 flex flex-col items-center justify-center gap-1.5 sm:gap-2 md:gap-3 pt-2 md:pt-4 w-full h-full">
                   {Array.from({ length: beadPositions[index].count }).map((_, beadIndex) => (
                     <div
@@ -168,8 +194,9 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
                         }
                       }}
                       className={cn(
-                        "w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full bg-gray-800 shadow-lg transition-all duration-300 transform hover:scale-125 active:scale-110",
-                        !readonly && "cursor-pointer hover:bg-gray-900 touch-none"
+                        "w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-125 active:scale-110",
+                        BEAD_COLORS[index],
+                        !readonly && "cursor-pointer touch-none"
                       )}
                       title="Click to remove"
                     />
@@ -199,14 +226,22 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
         </div>
       )}
 
-      {/* Reset button */}
+      {/* Action buttons */}
       {!readonly && (
-        <Button 
-          onClick={handleReset}
-          className="bg-red-600 hover:bg-red-700 text-white text-base md:text-lg px-8 md:px-12 py-4 md:py-6 rounded-xl shadow-lg touch-none"
-        >
-          আবার করো
-        </Button>
+        <div className="flex gap-3 md:gap-4 flex-wrap justify-center">
+          <Button 
+            onClick={handleRemoveLastBead}
+            className="bg-orange-600 hover:bg-orange-700 text-white text-base md:text-lg px-6 md:px-10 py-4 md:py-6 rounded-xl shadow-lg touch-none"
+          >
+            সংশোধন করো
+          </Button>
+          <Button 
+            onClick={handleReset}
+            className="bg-red-600 hover:bg-red-700 text-white text-base md:text-lg px-8 md:px-12 py-4 md:py-6 rounded-xl shadow-lg touch-none"
+          >
+            আবার করো
+          </Button>
+        </div>
       )}
     </div>
   );
