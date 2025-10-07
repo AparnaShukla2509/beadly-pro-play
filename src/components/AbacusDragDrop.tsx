@@ -168,49 +168,58 @@ export const AbacusDragDrop = ({ value = 0, onChange, readonly = false, label, s
       
       <div className="relative bg-gradient-to-br from-yellow-400 to-orange-400 rounded-2xl md:rounded-3xl p-4 md:p-8 lg:p-12 shadow-2xl w-full max-w-2xl">
         {/* Abacus rods */}
-        <div className="grid grid-cols-5 gap-2 sm:gap-4 md:gap-6 lg:gap-8 mb-4 md:mb-6">
+        <div className="flex gap-2 sm:gap-4 md:gap-6 lg:gap-8 mb-4 md:mb-6 justify-center items-start">
           {PLACE_VALUES.map((place, index) => (
-            <div key={index} className="flex flex-col items-center">
-              {/* Rod container with drop zone */}
-              <div 
-                className="relative flex flex-col items-center w-full min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-[350px]"
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-              >
-                {/* Vertical rod */}
-                <div className="absolute w-1.5 sm:w-2 md:w-3 h-full bg-gray-600 rounded-full top-0" />
-                
-                {/* Beads on rod - shown as colored beads */}
-                <div className="relative z-10 flex flex-col items-center justify-center gap-1.5 sm:gap-2 md:gap-3 pt-2 md:pt-4 w-full h-full">
-                  {Array.from({ length: beadPositions[index].count }).map((_, beadIndex) => (
-                    <div
-                      key={beadIndex}
-                      onClick={() => {
-                        if (!readonly) {
-                          const newPositions = [...beadPositions];
-                          newPositions[index] = { count: Math.max(0, newPositions[index].count - 1) };
-                          setBeadPositions(newPositions);
-                          onChange?.(beadPositionsToValue(newPositions));
-                        }
-                      }}
-                      className={cn(
-                        "w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-125 active:scale-110",
-                        BEAD_COLORS[index],
-                        !readonly && "cursor-pointer touch-none"
-                      )}
-                      title="Click to remove"
-                    />
-                  ))}
+            <>
+              <div key={index} className="flex flex-col items-center">
+                {/* Rod container with drop zone */}
+                <div 
+                  className="relative flex flex-col items-center w-full min-h-[200px] sm:min-h-[250px] md:min-h-[300px] lg:min-h-[350px]"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                >
+                  {/* Vertical rod */}
+                  <div className="absolute w-1.5 sm:w-2 md:w-3 h-full bg-gray-600 rounded-full top-0" />
+                  
+                  {/* Beads on rod - shown as colored beads */}
+                  <div className="relative z-10 flex flex-col items-center justify-center gap-1.5 sm:gap-2 md:gap-3 pt-2 md:pt-4 w-full h-full">
+                    {Array.from({ length: beadPositions[index].count }).map((_, beadIndex) => (
+                      <div
+                        key={beadIndex}
+                        onClick={() => {
+                          if (!readonly) {
+                            const newPositions = [...beadPositions];
+                            newPositions[index] = { count: Math.max(0, newPositions[index].count - 1) };
+                            setBeadPositions(newPositions);
+                            onChange?.(beadPositionsToValue(newPositions));
+                          }
+                        }}
+                        className={cn(
+                          "w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-125 active:scale-110",
+                          BEAD_COLORS[index],
+                          !readonly && "cursor-pointer touch-none"
+                        )}
+                        title="Click to remove"
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Place value label */}
-              <div className="mt-2 md:mt-4 text-center">
-                <div className="text-xs sm:text-sm md:text-base font-bold text-gray-800 leading-tight">
-                  {place.bengali}
+                {/* Place value label */}
+                <div className="mt-2 md:mt-4 text-center">
+                  <div className="text-xs sm:text-sm md:text-base font-bold text-gray-800 leading-tight">
+                    {place.bengali}
+                  </div>
                 </div>
               </div>
-            </div>
+              
+              {/* Decimal point separator after ones place (index 2) */}
+              {index === 2 && (
+                <div className="flex items-center self-center" style={{ marginBottom: '60px' }}>
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 rounded-full bg-gray-800 shadow-lg" />
+                </div>
+              )}
+            </>
           ))}
         </div>
       </div>
